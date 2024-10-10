@@ -1,0 +1,97 @@
+Load and Clean Strawberry Data
+
+Load Libraries
+```{r}
+#| warning: false
+#| message: false
+
+library(knitr)  
+library(kableExtra)
+library(tidyverse)
+library(stringr)
+```
+
+
+Load and Clean Data
+```{r}
+data_orig <- read_csv("strawberries25_v3.csv", col_names = TRUE)
+strawberry<-data_orig
+
+#change (D) in CV % column to N/A
+strawberry = strawberry %>%
+  mutate(`CV (%)` = na_if(`CV (%)`,"(D)")) %>%
+  mutate(`CV (%)` = na_if(`CV (%)`,"(L)")) %>%
+  mutate(`CV (%)` = na_if(`CV (%)`,"(H)"))
+
+#change CV % column to numeric type
+strawberry$`CV (%)` <- as.numeric(strawberry$`CV (%)`)
+
+#change (D) in Value column to N/A
+strawberry = strawberry %>%
+  mutate(Value = na_if(Value,"(D)")) %>%
+  mutate(Value = na_if(Value,"(Z)"))
+#change Value column to numeric type
+strawberry$Value <- as.numeric(strawberry$Value)
+
+#remove columns that have no unique values
+strawberry = strawberry %>%
+  select(-watershed_code, -Watershed,-`Zip Code`, -Region, -`Week Ending`, -Commodity, -`Week Ending`)
+
+strawberry = strawberry %>%
+  mutate(`Domain Category` = ifelse(is.na(`Domain Category`), "", `Domain Category`)) %>%
+  mutate(
+    Chemical = gsub(", .*", "", `Domain Category`),
+    Pesticide = gsub(".*, (.*):.*","\\1", `Domain Category`),
+    Number = gsub(".*= (\\d+).*", "\\1", `Domain Category`)
+  )
+
+
+
+```
+
+
+Split up Data Item column
+```{r}
+
+```
+
+
+Plot Strawberry Sales in 2021
+```{r}
+
+#need to split up the data item columns first
+plot_state_data<-na.omit(strawberry) %>%
+  select(c(Year, State, Value, `Data Item`)) %>%
+  filter(!is.na(Value) & `Data Item` == "STRAWBERRIES - ACRES GROWN") %>%
+  arrange(desc(Value))
+  
+
+ggplot(plot_state_data, aes(x=reorder(State, -Value), y=Value)) + 
+  geom_bar(stat = "identity") + 
+  theme(axis.text.x=element_text(angle=45,hjust=1)) +
+  labs(x = "State", y = "Acres", title ="Acres of Strawberries Grown Per State")
+  
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
