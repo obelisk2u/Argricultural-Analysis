@@ -280,7 +280,7 @@ Write CSVs
 ---------------------------------------------
 # Chemical Analysis
 
-I like to believe that the EPA is not sentencing me to death by eating strawberries, so I will be using a dataset found through the USDA Pesticide Data Program which is a national pesticide residue monitoring program.
+I like to believe that the EPA is not sentencing me to death by eating strawberries, so I will be using a dataset found through the USDA Pesticide Data Program which is a national pesticide residue monitoring program to see how much of these chemicals are making it into our grocery stores. It is also important to note that the dataset only includes results where there was pesticide residue found, the PDP has conducted hundreds of thousands of tests on strawberries alone, the majority of which had no measurable amount of pesticide residue on them. 
 
 ```{r}
 usda_chem_original<-read.csv("usda_chem_sample_data.csv")
@@ -354,6 +354,8 @@ max(carb$Concentration)
 ```
 
 Again we can see that only 0.4% of samples contained traces of Carbendazim and the maximum concentration found was 0.5% of that allowed by the EPA. 
+
+Thanks to the PDP, we can see that a nearly immeasurable fraction of strawberries contain any pesticide residue at all. Of those positive results, only one sample was found to have pesticide residue greater than the EPA recommended tolerance. It is my conclusion that I will fearlessly continue eating strawberries. It must be noted though that hundreds of cases of pesticide related illnesses have been recorded in farmhands. That is not to mention the environmental hazards involved such as contaminated groundwater, killing of necessary wildlife (i.e. bees), and the evolution of pesticide resistant bugs. These issues are not contained to just strawberry production however and it is an unfortunate side-effect of factory farming. To avoid this one can simply eat organic produce, but where's the thrill in that? 
 
 
 Jon Neimann helped me with the final functions
