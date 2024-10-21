@@ -278,7 +278,7 @@ Write CSVs
 ```
 
 ---------------------------------------------
-Chemical Analysis
+# Chemical Analysis
 
 I like to believe that the EPA is not sentencing me to death by eating strawberries, so I will be using a dataset found through the USDA Pesticide Data Program which is a national pesticide residue monitoring program.
 
@@ -338,27 +338,22 @@ Malathion is, like Chlorpyrifos, considered an extremely dangerous Organophospha
 ```{r}
 mala <- usda_chem |>
   filter(Pesticide.Name == "Malathion")
-mala
-max(mala$Concentration)
+head(mala)
+maxi<-max(mala$Concentration)
+paste("Maximum Malathion Concentration:",maxi)
 ```
-There are many Malathion detection events, however, the maximum concentration found was 0.091ppm. This is merely 1.1% of the EPA declared tolerance level.
+In 2% of the samples Malathion was detected and the maximum concentration found in those samples was 0.091ppm. This is merely 1.1% of the EPA declared tolerance level.
 
 Finally we will explore Carbendazim, a fungicide associated with reproductive toxicity and potential endocrine disruption.
 
 ```{r}
 carb <- usda_chem |>
   filter(Pesticide.Name == "Carbendazim (MBC)")
-carb
+head(carb)
 max(carb$Concentration)
 ```
 
-Again we can see there are many detection events
-
-
-
-
-
-
+Again we can see that only 0.4% of samples contained traces of Carbendazim and the maximum concentration found was 0.5% of that allowed by the EPA. 
 
 
 Jon Neimann helped me with the final functions
