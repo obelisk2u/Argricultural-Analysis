@@ -19,14 +19,14 @@ library(knitr)
 library(kableExtra)
 library(tidyverse)
 library(stringr)
+library(readxl)
 
 options(echo = FALSE, digits = 3, 
         scipen = 999, warn = -1, message = FALSE)
 ```
 
-\centering
 In this document I will be explaining the process of cleaning open-source USDA data on Strawberry production in the US from 2018 to 2024. The cleaned data is exported as 4 separate CSV files: survey_data and census_data includes data on strawberry production that was collected through surveys and the census respectively, chemicals includes all the data regarding chemical use in strawberry production, and census_organic_data includes all data involving organic strawberry sales as per the census.
-\centering
+
 
 First we will load the data
 ```{r}
@@ -271,10 +271,97 @@ census <- fix_nonbearing_na(census)
 
 Write CSVs
 ```{r}
-write.csv(survey, "survey_data.csv", row.names = FALSE)
-write.csv(census, "census_data.csv", row.names = FALSE)
-write.csv(chemicals, "chemicals.csv", row.names = FALSE)
-write.csv(census_organic, "census_organic_data.csv", row.names = FALSE)
+# write.csv(survey, "survey_data.csv", row.names = FALSE)
+# write.csv(census, "census_data.csv", row.names = FALSE)
+# write.csv(chemicals, "chemicals.csv", row.names = FALSE)
+# write.csv(census_organic, "census_organic_data.csv", row.names = FALSE)
 ```
 
+---------------------------------------------
+Chemical Analysis
+
+I like to believe that the EPA is not sentencing me to death by eating strawberries, so I will be using a dataset found through the USDA Pesticide Data Program which is a national pesticide residue monitoring program.
+
+```{r}
+usda_chem_original<-read.csv("usda_chem_sample_data.csv")
+library(tidyverse)
+
+```
+
+Do some initial cleaning. We have been working with Florda and California data, but we will include all samples whose origin is the US. We will subset the data to include the sample ID, pesticide names, the concentration found in the sample (ppm), and the established EPA tolerance level for that pesticide (ppm).
+
+```{r}
+usda_chem<-as.data.frame(usda_chem_original)
+  
+usda_chem <- usda_chem |>
+  filter(Country == "") |>
+  select(Pesticide.Name, EPA.Tolerance..ppm., Concentration, Sample.ID) |>
+  mutate(EPA.Tolerance..ppm. = as.numeric(EPA.Tolerance..ppm.))
+usda_chem<-na.omit(usda_chem)
+
+```
+
+Now we will do some analysis to see if any samples exceed that EPA tolerance level.
+```{r}
+usda_chem <- usda_chem |>
+  mutate(uh_oh = Concentration > EPA.Tolerance..ppm.)
+
+is_true<-usda_chem |>
+  filter(uh_oh == TRUE)
+is_true
+```
+
+We can see that there was one instance of a detected pesticide being about the EPA tolerance level: Pyriproxyfen. As per the EPAs Human Health Draft Risk Assessment, Pyriproxyfen has an RfD of 0.01mg/kg/day. This means that for every kilogram a persons weight, they are allowed to consume 0.01 mg/day. Let's see how many strawberries I would have to eat to experience the adverse effects of Pyriproxyfen using me as an example.
+
+Safe Exposure = RfD x Body Weight = 0.01mg/kg/day x 65kg = 0.7mg/day
+
+Kilograms of Strawberries = Safe Exposure / Concentration Found = 0.7mg/day / 0.37mg/kg = 1.89kg
+
+Number of Strawberries = 1.89kg / 0.02kg = 95 Strawberries
+
+If you find me eating 95 strawberries, please know I have bigger issues than Pyriproxyfen toxicity.
+
+Let's talk about Chlorpyrifos, widely considered one of the most dangerous pesticides used in strawberry production. It has been linked to Reduced IQ, Attention disorders, Autism, Neurodevelopmental disorders, and Death. Chlorpyrifos was banned in the United States in March 2021 (6 years after the original proposition to ban the substance). It was later reinstated its use in August 2022 stating the EPA had failed to follow proper procedures.
+
+We will now analyze the instances of Chlorpyrifos being detected in samples of US grown strawberries.
+
+```{r}
+chlor <- usda_chem |>
+  filter(Pesticide.Name == "Chlorpyrifos")
+chlor
+```
+
+As we can see, out of 2141 samples taken across the US there was one instance of Chlorpyrifos detection where is was recorded at 4% of the EPA defined tolerance level. 
+
+Malathion is, like Chlorpyrifos, considered an extremely dangerous Organophosphate used in strawberry production. Let's see how much gets into our food.
+
+```{r}
+mala <- usda_chem |>
+  filter(Pesticide.Name == "Malathion")
+mala
+max(mala$Concentration)
+```
+There are many Malathion detection events, however, the maximum concentration found was 0.091ppm. This is merely 1.1% of the EPA declared tolerance level.
+
+Finally we will explore Carbendazim, a fungicide associated with reproductive toxicity and potential endocrine disruption.
+
+```{r}
+carb <- usda_chem |>
+  filter(Pesticide.Name == "Carbendazim (MBC)")
+carb
+max(carb$Concentration)
+```
+
+Again we can see there are many detection events
+
+
+
+
+
+
+
+
 Jon Neimann helped me with the final functions
+
+https://pmc.ncbi.nlm.nih.gov/articles/PMC10217756/
+https://www.sciencedirect.com/science/article/pii/S2352364615300055
